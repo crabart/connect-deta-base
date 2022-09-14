@@ -1,0 +1,26 @@
+{
+  "name": "connect-deta-base",
+  "version": "0.1.0",
+  "description": "Deta Base session store for express-session",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint index.js lib",
+    "fmt": "prettier --write .",
+    "fmt-check": "prettier --check ."
+  },
+  "author": "crabart",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14"
+  },
+  "keywords": [
+    "connect",
+    "deta",
+    "session",
+    "express"
+  ],
+  "devDependencies": {
+    "eslint-config-prettier": "^8.5.0",
+    "prettier": "^2.7.1"
+  }
+}
