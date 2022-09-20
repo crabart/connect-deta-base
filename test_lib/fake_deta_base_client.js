@@ -10,7 +10,40 @@ class FakeDetaBaseClient {
 
   // get(key) {}
 
-  // put({ sessionData }, key, expire) {}
+  put({ sessionData }, key, expire) {
+    return new Promise((resolve, reject) => {
+      try {
+        if (this.needThrowError) {
+          throw Error('Unauthorized');
+        }
+
+        const isExpire = expire && expire.expireIn && true;
+        const expireTime = isExpire && Date.now() + expire.expireIn * 1000;
+
+        const data = isExpire
+          ? {
+              key: key,
+              sessionData: { ...sessionData },
+              __expire: expireTime,
+            }
+          : { key: key, sessionData: { ...sessionData } };
+
+        const index = this.savedData.findIndex((element) => {
+          return element.key === key;
+        });
+
+        if (index === -1) {
+          this.savedData.push(data);
+        } else {
+          this.savedData[index] = data;
+        }
+
+        resolve(data);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
 }
 
 module.exports = FakeDetaBaseClient;
