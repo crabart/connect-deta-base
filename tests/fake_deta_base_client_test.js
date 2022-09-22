@@ -112,3 +112,41 @@ test('Fake Clinet put test same id', async () => {
     Error
   );
 });
+
+test('Fake Client get test', async () => {
+  const key = 'sess:hoge';
+  const ret = await client.get(key);
+
+  expect(ret.key).toBe(key);
+  expect(ret.sessionData).toEqual({
+    cookie: { param1: 'hoge', param2: 100 },
+    message: 'this is message',
+  });
+  expect(ret.__expire).toBeDefined();
+});
+
+test('Fake Client get test no expire', async () => {
+  const key = 'sess:foo';
+  const ret = await client.get(key);
+
+  expect(ret.key).toBe(key);
+  expect(ret.sessionData).toEqual({
+    cookie: { param1: 'foo', param2: 3000 },
+    other: 'other',
+  });
+  expect(ret.__expire).toBeUndefined();
+});
+
+test('Fake Client get test no key', async () => {
+  const key = 'sess:no_key';
+  const ret = await client.get(key);
+
+  expect(ret).toBeNull();
+});
+
+test('Fake Client get test error', async () => {
+  client.needThrowError = true;
+  const key = 'sess:foo';
+
+  expect(client.get(key)).rejects.toThrow(Error);
+});

@@ -8,7 +8,21 @@ class FakeDetaBaseClient {
 
   // delete(key) {}
 
-  // get(key) {}
+  get(key) {
+    return new Promise((resolve, reject) => {
+      try {
+        if (this.needThrowError) {
+          throw Error('Unauthorized');
+        }
+
+        const data = this.savedData.find((element) => element.key === key);
+
+        resolve(data === undefined ? null : data);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
 
   put({ sessionData }, key, expire) {
     return new Promise((resolve, reject) => {
