@@ -6,7 +6,20 @@ class FakeDetaBaseClient {
 
   // fetch({ 'key?pfx': prefix }) {}
 
-  // delete(key) {}
+  delete(key) {
+    return new Promise((resolve, reject) => {
+      try {
+        if (this.needThrowError) {
+          throw Error('Unauthorized');
+        }
+
+        this.savedData = this.savedData.filter((it) => it.key !== key);
+        resolve(null);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
 
   get(key) {
     return new Promise((resolve, reject) => {

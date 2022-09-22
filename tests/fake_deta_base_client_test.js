@@ -154,3 +154,34 @@ describe('Fake Clinet get test', () => {
     expect(client.get(key)).rejects.toThrow(Error);
   });
 });
+
+describe('Fake Clinet get test delete test', () => {
+  test('exist data', async () => {
+    const key = 'sess:hoge';
+    const ret = await client.delete(key);
+
+    const index = client.savedData.findIndex((it) => it.key === key);
+    const len = client.savedData.length;
+
+    expect(ret).toBeNull();
+    expect(index).toBe(-1);
+    expect(len).toBe(2);
+  });
+
+  test('not exist', async () => {
+    const key = 'sess:no_key';
+    const ret = await client.delete(key);
+
+    const len = client.savedData.length;
+
+    expect(ret).toBeNull();
+    expect(len).toBe(3);
+  });
+
+  test('error', async () => {
+    client.needThrowError = true;
+    const key = 'sess:foo';
+
+    expect(client.delete(key)).rejects.toThrow(Error);
+  });
+});
