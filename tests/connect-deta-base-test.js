@@ -2,6 +2,14 @@ const session = require('express-session');
 const FakeDetaBaseClient = require('../test_lib/fake-deta-base-client');
 const ConnectDetaBase = require('../')(session);
 const client = new FakeDetaBaseClient();
+const SetupDefaultSessions = require('../test_lib/setup-util');
+
+beforeEach(async () => {
+  client.savedData.splice(0);
+  client.needThrowError = false;
+
+  await SetupDefaultSessions(client);
+});
 
 describe('constructor', () => {
   test('no client', () => {
