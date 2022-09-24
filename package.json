@@ -4,7 +4,7 @@
   "description": "Deta Base session store for express-session",
   "main": "index.js",
   "scripts": {
-    "lint": "eslint index.js lib",
+    "lint": "eslint index.js lib test_lib tests",
     "fmt": "prettier --write .",
     "fmt-check": "prettier --check .",
     "test": "jest"
