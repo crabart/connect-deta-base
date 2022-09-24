@@ -4,7 +4,38 @@ class FakeDetaBaseClient {
 
   constructor() {}
 
-  // fetch({ 'key?pfx': prefix }) {}
+  fetch(query) {
+    return new Promise((resolve, reject) => {
+      try {
+        if (this.needThrowError) {
+          throw Error('Unauthorized');
+        }
+
+        let retData = { count: 0, items: [] };
+
+        if (query) {
+          const { 'key?pfx': prefix } = query;
+
+          if (prefix) {
+            retData.items = this.savedData.filter((it) =>
+              it.key.startsWith(prefix)
+            );
+            retData.count = retData.items.length;
+          } else {
+            retData.items = [...this.savedData];
+            retData.count = this.savedData.length;
+          }
+        } else {
+          retData.items = [...this.savedData];
+          retData.count = this.savedData.length;
+        }
+
+        resolve(retData);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
 
   delete(key) {
     return new Promise((resolve, reject) => {

@@ -198,3 +198,164 @@ describe('Fake Clinet get test delete test', () => {
     expect(client.delete(key)).rejects.toThrow(Error);
   });
 });
+
+describe('Fake Clinet get test fetch test', () => {
+  test('no query', async () => {
+    const { count, items } = await client.fetch();
+
+    // expect(last).toBeNull(); // TODO
+    expect(count).toBe(4);
+    {
+      const { __expire, ...item } = items[0];
+      expect(item).toEqual({
+        key: 'sess:hoge',
+        sessionData: {
+          cookie: { param1: 'hoge', param2: 100 },
+          message: 'this is message',
+        },
+      });
+      expect(__expire).toBeDefined();
+    }
+
+    {
+      expect(items[1]).toEqual({
+        key: 'sess:foo',
+        sessionData: {
+          cookie: { param1: 'foo', param2: 3000 },
+          other: 'other',
+        },
+      });
+    }
+
+    {
+      const { __expire, ...item } = items[2];
+      expect(item).toEqual({
+        key: 'sess:bar',
+        sessionData: {
+          cookie: { param1: 'barbar', param2: 5500 },
+          num: 111,
+        },
+      });
+      expect(__expire).toBeDefined();
+    }
+
+    {
+      const { __expire, ...item } = items[3];
+      expect(item).toEqual({
+        key: 'another:hoge',
+        sessionData: {
+          cookie: { param1: 'hoge', param2: 100 },
+          message: 'this is message',
+        },
+      });
+      expect(__expire).toBeDefined();
+    }
+  });
+
+  test('no prefix', async () => {
+    const { count, items } = await client.fetch({ query: 'dummy' });
+
+    // expect(last).toBeNull(); // TODO
+    expect(count).toBe(4);
+    {
+      const { __expire, ...item } = items[0];
+      expect(item).toEqual({
+        key: 'sess:hoge',
+        sessionData: {
+          cookie: { param1: 'hoge', param2: 100 },
+          message: 'this is message',
+        },
+      });
+      expect(__expire).toBeDefined();
+    }
+
+    {
+      expect(items[1]).toEqual({
+        key: 'sess:foo',
+        sessionData: {
+          cookie: { param1: 'foo', param2: 3000 },
+          other: 'other',
+        },
+      });
+    }
+
+    {
+      const { __expire, ...item } = items[2];
+      expect(item).toEqual({
+        key: 'sess:bar',
+        sessionData: {
+          cookie: { param1: 'barbar', param2: 5500 },
+          num: 111,
+        },
+      });
+      expect(__expire).toBeDefined();
+    }
+
+    {
+      const { __expire, ...item } = items[3];
+      expect(item).toEqual({
+        key: 'another:hoge',
+        sessionData: {
+          cookie: { param1: 'hoge', param2: 100 },
+          message: 'this is message',
+        },
+      });
+      expect(__expire).toBeDefined();
+    }
+  });
+
+  test('sess: prefix', async () => {
+    const prefix = 'sess:';
+    const { count, items } = await client.fetch({ 'key?pfx': prefix });
+
+    // expect(last).toBeNull(); // TODO
+    expect(count).toBe(3);
+    {
+      const { __expire, ...item } = items[0];
+      expect(item).toEqual({
+        key: 'sess:hoge',
+        sessionData: {
+          cookie: { param1: 'hoge', param2: 100 },
+          message: 'this is message',
+        },
+      });
+      expect(__expire).toBeDefined();
+    }
+
+    {
+      expect(items[1]).toEqual({
+        key: 'sess:foo',
+        sessionData: {
+          cookie: { param1: 'foo', param2: 3000 },
+          other: 'other',
+        },
+      });
+    }
+
+    {
+      const { __expire, ...item } = items[2];
+      expect(item).toEqual({
+        key: 'sess:bar',
+        sessionData: {
+          cookie: { param1: 'barbar', param2: 5500 },
+          num: 111,
+        },
+      });
+      expect(__expire).toBeDefined();
+    }
+  });
+
+  test('no date', async () => {
+    const prefix = 'no_data';
+    const { count, items } = await client.fetch({ 'key?pfx': prefix });
+
+    expect(count).toBe(0);
+    expect(items).toEqual([]);
+  });
+
+  test('error', async () => {
+    client.needThrowError = true;
+
+    expect(client.fetch()).rejects.toThrow(Error);
+  });
+});
