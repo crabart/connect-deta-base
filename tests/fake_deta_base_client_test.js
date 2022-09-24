@@ -41,6 +41,19 @@ const setupDefaultSessions = async () => {
     )
   );
 
+  retArray.push(
+    client.put(
+      {
+        sessionData: {
+          cookie: { param1: 'hoge', param2: 100 },
+          message: 'this is message',
+        },
+      },
+      'another:hoge',
+      { expireIn: 86400 }
+    )
+  );
+
   Promise.all(retArray);
 };
 
@@ -90,7 +103,7 @@ describe('Fake Clinet put test', () => {
       return element.key === key;
     });
 
-    expect(client.savedData.length).toBe(3);
+    expect(client.savedData.length).toBe(4);
     expect(ret.key).toBe(key);
     expect(ret.sessionData).toEqual(sessionData2);
     expect(ret.__expire).toBeDefined();
@@ -165,7 +178,7 @@ describe('Fake Clinet get test delete test', () => {
 
     expect(ret).toBeNull();
     expect(index).toBe(-1);
-    expect(len).toBe(2);
+    expect(len).toBe(3);
   });
 
   test('not exist', async () => {
@@ -175,7 +188,7 @@ describe('Fake Clinet get test delete test', () => {
     const len = client.savedData.length;
 
     expect(ret).toBeNull();
-    expect(len).toBe(3);
+    expect(len).toBe(4);
   });
 
   test('error', async () => {
