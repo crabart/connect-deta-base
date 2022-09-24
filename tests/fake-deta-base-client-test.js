@@ -1,4 +1,4 @@
-const FakeDetaBaseClient = require('../test_lib/fake_deta_base_client');
+const FakeDetaBaseClient = require('../test_lib/fake-deta-base-client');
 const client = new FakeDetaBaseClient();
 
 const setupDefaultSessions = async () => {
