@@ -55,3 +55,73 @@ describe('constructor', () => {
     expect(store.enableTouch).toBe(true);
   });
 });
+
+describe('all', () => {
+  let store;
+  beforeEach(async () => {
+    const option = { client: client };
+    store = new ConnectDetaBase(option);
+  });
+
+  test('default', (done) => {
+    const cb = (error, items) => {
+      try {
+        expect(error).toBeNull();
+        expect(items.length).toBe(3);
+        {
+          const { __expire, ...item } = items[0];
+          expect(item).toEqual({
+            key: 'sess:hoge',
+            sessionData: {
+              cookie: { param1: 'hoge', param2: 100 },
+              message: 'this is message',
+            },
+          });
+          expect(__expire).toBeDefined();
+        }
+
+        {
+          expect(items[1]).toEqual({
+            key: 'sess:foo',
+            sessionData: {
+              cookie: { param1: 'foo', param2: 3000 },
+              other: 'other',
+            },
+          });
+        }
+
+        {
+          const { __expire, ...item } = items[2];
+          expect(item).toEqual({
+            key: 'sess:bar',
+            sessionData: {
+              cookie: { param1: 'barbar', param2: 5500 },
+              num: 111,
+            },
+          });
+          expect(__expire).toBeDefined();
+        }
+
+        done();
+      } catch (error) {
+        done(error);
+      }
+    };
+
+    store.all(cb);
+  });
+
+  test('error', (done) => {
+    client.needThrowError = true;
+
+    const cb = (error) => {
+      try {
+        expect(error).toBeDefined();
+        done();
+      } catch (error) {
+        done(error);
+      }
+    };
+    store.all(cb);
+  });
+});
