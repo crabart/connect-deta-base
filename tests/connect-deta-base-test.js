@@ -125,3 +125,55 @@ describe('all', () => {
     store.all(cb);
   });
 });
+
+describe('clear', () => {
+  let store;
+  beforeEach(async () => {
+    const option = { client: client };
+    store = new ConnectDetaBase(option);
+  });
+
+  test('default', (done) => {
+    const cb = () => {
+      try {
+        const filterd = client.savedData.filter((it) =>
+          it.key.startsWith(store.prefix)
+        );
+        expect(filterd.length).toBe(0);
+        done();
+      } catch (error) {
+        done(error);
+      }
+    };
+    store.clear(cb);
+  });
+
+  test('limit', (done) => {
+    client.limit = 2;
+    const cb = () => {
+      try {
+        const filterd = client.savedData.filter((it) =>
+          it.key.startsWith(store.prefix)
+        );
+        expect(filterd.length).toBe(0);
+        done();
+      } catch (error) {
+        done(error);
+      }
+    };
+    store.clear(cb);
+  });
+
+  test('error', (done) => {
+    client.needThrowError = true;
+    const cb = (error) => {
+      try {
+        expect(error).toBeDefined();
+        done();
+      } catch (error) {
+        done(error);
+      }
+    };
+    store.clear(cb);
+  });
+});
