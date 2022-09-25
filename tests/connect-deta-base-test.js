@@ -290,3 +290,136 @@ describe('get', () => {
     store.get('hoge', cb);
   });
 });
+
+describe('set', () => {
+  let store;
+  beforeEach(async () => {
+    const option = { client: client };
+    store = new ConnectDetaBase(option);
+  });
+
+  test('disable TTL', (done) => {
+    store.enableTTL = false;
+    const expires = new Date(Date.now() + 60 * 1000).toISOString();
+
+    const cb = (error) => {
+      try {
+        expect(error).toBeDefined();
+        const dat = client.savedData.find(
+          (it) => it.key === store.prefix + 'new_session'
+        );
+        expect(dat).toEqual({
+          key: store.prefix + 'new_session',
+          sessionData: {
+            cookie: { param1: 'hoge', param2: 100, expires: expires },
+            message: 'this is message',
+          },
+        });
+
+        done();
+      } catch (error) {
+        done(error);
+      }
+    };
+
+    store.set(
+      'new_session',
+      {
+        cookie: { param1: 'hoge', param2: 100, expires: expires },
+        message: 'this is message',
+      },
+      cb
+    );
+  });
+
+  test('expires exist', (done) => {
+    const expires = new Date(Date.now() + 60 * 1000).toISOString();
+
+    const cb = (error) => {
+      try {
+        expect(error).toBeDefined();
+        const dat = client.savedData.find(
+          (it) => it.key === store.prefix + 'new_session'
+        );
+        expect(dat).toEqual({
+          key: store.prefix + 'new_session',
+          sessionData: {
+            cookie: { param1: 'hoge', param2: 100, expires: expires },
+            message: 'this is message',
+          },
+          __expires: Math.round(new Date(expires).getTime() / 1000),
+        });
+
+        done();
+      } catch (error) {
+        done(error);
+      }
+    };
+
+    store.set(
+      'new_session',
+      {
+        cookie: { param1: 'hoge', param2: 100, expires: expires },
+        message: 'this is message',
+      },
+      cb
+    );
+  });
+
+  test('expires not exist', (done) => {
+    const execTime = new Date();
+
+    const cb = (error) => {
+      try {
+        expect(error).toBeDefined();
+        const dat = client.savedData.find(
+          (it) => it.key === store.prefix + 'new_session'
+        );
+        expect(dat.key).toBe(store.prefix + 'new_session');
+        expect(dat.sessionData).toEqual({
+          cookie: { param1: 'hoge', param2: 100 },
+          message: 'this is message',
+        });
+        expect(dat.__expires).toBeLessThanOrEqual(
+          execTime.getTime() / 1000 + store.ttl + 5
+        );
+        expect(dat.__expires).toBeGreaterThanOrEqual(
+          execTime.getTime() / 1000 + store.ttl - 5
+        );
+
+        done();
+      } catch (error) {
+        done(error);
+      }
+    };
+
+    store.set(
+      'new_session',
+      {
+        cookie: { param1: 'hoge', param2: 100 },
+        message: 'this is message',
+      },
+      cb
+    );
+  });
+
+  test('error', (done) => {
+    client.needThrowError = true;
+    const cb = (error) => {
+      try {
+        expect(error).toBeDefined();
+        done();
+      } catch (error) {
+        done(error);
+      }
+    };
+    store.set(
+      'new_session',
+      {
+        cookie: { param1: 'hoge', param2: 100 },
+        message: 'this is message',
+      },
+      cb
+    );
+  });
+});
