@@ -7,6 +7,7 @@ const SetupUtil = require('../test_lib/setup-util');
 beforeEach(async () => {
   client.savedData.splice(0);
   client.needThrowError = false;
+  client.limit = 1000;
   const option = { client: client };
   await SetupUtil.setupDefaultSessions(new ConnectDetaBase(option));
 });
@@ -421,5 +422,40 @@ describe('set', () => {
       },
       cb
     );
+  });
+});
+
+describe('length', () => {
+  let store;
+  beforeEach(async () => {
+    const option = { client: client };
+    store = new ConnectDetaBase(option);
+  });
+
+  test('default', (done) => {
+    const cb = (error, count) => {
+      try {
+        expect(error).toBeNull();
+        expect(count).toBe(3);
+        done();
+      } catch (error) {
+        done(error);
+      }
+    };
+    store.length(cb);
+  });
+
+  test('error', (done) => {
+    client.needThrowError = true;
+    const cb = (error, count) => {
+      try {
+        expect(error).toBeDefined();
+        expect(count).toBeUndefined();
+        done();
+      } catch (error) {
+        done(error);
+      }
+    };
+    store.length(cb);
   });
 });
