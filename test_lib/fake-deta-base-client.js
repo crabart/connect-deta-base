@@ -100,7 +100,8 @@ class FakeDetaBaseClient {
         if (isExpireIn) {
           expireTime = isExpireIn && Date.now() + expire.expireIn * 1000;
         } else if (isExpireAt) {
-          expireTime = expire.expireAt;
+          const date = new Date(expire.expireAt);
+          expireTime = Math.round(date.getTime() / 1000);
         }
 
         const data =
