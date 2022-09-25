@@ -1,6 +1,7 @@
 class FakeDetaBaseClient {
   savedData = [];
   needThrowError = false;
+  limit = 1000;
 
   constructor() {}
 
@@ -11,7 +12,7 @@ class FakeDetaBaseClient {
           throw Error('Unauthorized');
         }
 
-        let retData = { count: 0, items: [] };
+        let retData = { count: 0, items: [], last: undefined };
 
         if (query) {
           const { 'key?pfx': prefix } = query;
@@ -20,14 +21,19 @@ class FakeDetaBaseClient {
             retData.items = this.savedData.filter((it) =>
               it.key.startsWith(prefix)
             );
+
+            this._limitItems(retData);
+
             retData.count = retData.items.length;
           } else {
             retData.items = [...this.savedData];
-            retData.count = this.savedData.length;
+            this._limitItems(retData);
+            retData.count = retData.items.length;
           }
         } else {
           retData.items = [...this.savedData];
-          retData.count = this.savedData.length;
+          this._limitItems(retData);
+          retData.count = retData.items.length;
         }
 
         resolve(retData);
@@ -35,6 +41,13 @@ class FakeDetaBaseClient {
         reject(error);
       }
     });
+  }
+
+  _limitItems(retData) {
+    const spliced = retData.items.splice(this.limit);
+    if (spliced.length > 0) {
+      retData.last = retData.items[retData.items.length - 1];
+    }
   }
 
   delete(key) {

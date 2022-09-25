@@ -5,6 +5,7 @@ const SetupDefaultSessions = require('../test_lib/setup-util');
 beforeEach(async () => {
   client.savedData.splice(0);
   client.needThrowError = false;
+  client.limit = 1000;
 
   await SetupDefaultSessions(client);
 });
@@ -146,9 +147,9 @@ describe('Fake Clinet get test delete test', () => {
 
 describe('Fake Clinet get test fetch test', () => {
   test('no query', async () => {
-    const { count, items } = await client.fetch();
+    const { last, count, items } = await client.fetch();
 
-    // expect(last).toBeNull(); // TODO
+    expect(last).toBeUndefined();
     expect(count).toBe(4);
     {
       const { __expire, ...item } = items[0];
@@ -198,9 +199,9 @@ describe('Fake Clinet get test fetch test', () => {
   });
 
   test('no prefix', async () => {
-    const { count, items } = await client.fetch({ query: 'dummy' });
+    const { last, count, items } = await client.fetch({ query: 'dummy' });
 
-    // expect(last).toBeNull(); // TODO
+    expect(last).toBeUndefined();
     expect(count).toBe(4);
     {
       const { __expire, ...item } = items[0];
@@ -251,9 +252,9 @@ describe('Fake Clinet get test fetch test', () => {
 
   test('sess: prefix', async () => {
     const prefix = 'sess:';
-    const { count, items } = await client.fetch({ 'key?pfx': prefix });
+    const { last, count, items } = await client.fetch({ 'key?pfx': prefix });
 
-    // expect(last).toBeNull(); // TODO
+    expect(last).toBeUndefined();
     expect(count).toBe(3);
     {
       const { __expire, ...item } = items[0];
@@ -296,6 +297,42 @@ describe('Fake Clinet get test fetch test', () => {
 
     expect(count).toBe(0);
     expect(items).toEqual([]);
+  });
+
+  test('limit', async () => {
+    const prefix = 'sess:';
+    client.limit = 2;
+    const { last, count, items } = await client.fetch({ 'key?pfx': prefix });
+
+    expect(last).toEqual({
+      key: 'sess:foo',
+      sessionData: {
+        cookie: { param1: 'foo', param2: 3000 },
+        other: 'other',
+      },
+    });
+    expect(count).toBe(2);
+    {
+      const { __expire, ...item } = items[0];
+      expect(item).toEqual({
+        key: 'sess:hoge',
+        sessionData: {
+          cookie: { param1: 'hoge', param2: 100 },
+          message: 'this is message',
+        },
+      });
+      expect(__expire).toBeDefined();
+    }
+
+    {
+      expect(items[1]).toEqual({
+        key: 'sess:foo',
+        sessionData: {
+          cookie: { param1: 'foo', param2: 3000 },
+          other: 'other',
+        },
+      });
+    }
   });
 
   test('error', async () => {
