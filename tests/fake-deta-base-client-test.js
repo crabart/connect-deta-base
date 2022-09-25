@@ -1,13 +1,13 @@
 const FakeDetaBaseClient = require('../test_lib/fake-deta-base-client');
 const client = new FakeDetaBaseClient();
-const SetupDefaultSessions = require('../test_lib/setup-util');
+const SetupUtil = require('../test_lib/setup-util');
 
 beforeEach(async () => {
   client.savedData.splice(0);
   client.needThrowError = false;
   client.limit = 1000;
 
-  await SetupDefaultSessions(client);
+  await SetupUtil.setupDefaultData(client);
 });
 
 describe('Fake Clinet put test', () => {

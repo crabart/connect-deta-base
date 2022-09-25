@@ -1,4 +1,4 @@
-module.exports = async function (client) {
+module.exports.setupDefaultData = async function (client) {
   const retArray = [];
   retArray.push(
     client.put(
@@ -49,6 +49,29 @@ module.exports = async function (client) {
       'another:hoge',
       { expireIn: 86400 }
     )
+  );
+
+  Promise.all(retArray);
+};
+
+module.exports.setupDefaultSessions = async function (store) {
+  const retArray = [];
+  retArray.push(
+    store.set('hoge', {
+      cookie: { param1: 'hoge', param2: 100 },
+      message: 'this is message',
+    })
+  );
+
+  retArray.push(
+    store.set('foo', {
+      cookie: { param1: 'foo', param2: 3000 },
+      other: 'other',
+    })
+  );
+
+  retArray.push(
+    store.set('bar', { cookie: { param1: 'barbar', param2: 5500 }, num: 111 })
   );
 
   Promise.all(retArray);

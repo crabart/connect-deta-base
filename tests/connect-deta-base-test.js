@@ -2,13 +2,13 @@ const session = require('express-session');
 const FakeDetaBaseClient = require('../test_lib/fake-deta-base-client');
 const ConnectDetaBase = require('../')(session);
 const client = new FakeDetaBaseClient();
-const SetupDefaultSessions = require('../test_lib/setup-util');
+const SetupUtil = require('../test_lib/setup-util');
 
 beforeEach(async () => {
   client.savedData.splice(0);
   client.needThrowError = false;
-
-  await SetupDefaultSessions(client);
+  const option = { client: client };
+  await SetupUtil.setupDefaultSessions(new ConnectDetaBase(option));
 });
 
 describe('constructor', () => {
@@ -81,13 +81,15 @@ describe('all', () => {
         }
 
         {
-          expect(items[1]).toEqual({
+          const { __expire, ...item } = items[1];
+          expect(item).toEqual({
             key: 'sess:foo',
             sessionData: {
               cookie: { param1: 'foo', param2: 3000 },
               other: 'other',
             },
           });
+          expect(__expire).toBeDefined();
         }
 
         {
