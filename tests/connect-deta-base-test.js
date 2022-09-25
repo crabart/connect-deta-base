@@ -240,3 +240,53 @@ describe('destroy', () => {
     store.destroy('hoge', cb);
   });
 });
+
+describe('get', () => {
+  let store;
+  beforeEach(async () => {
+    const option = { client: client };
+    store = new ConnectDetaBase(option);
+  });
+
+  test('exist session', (done) => {
+    const cb = (error, session) => {
+      try {
+        expect(error).toBeNull();
+        expect(session).toEqual({
+          cookie: { param1: 'hoge', param2: 100 },
+          message: 'this is message',
+        });
+        done();
+      } catch (error) {
+        done(error);
+      }
+    };
+    store.get('hoge', cb);
+  });
+
+  test('not exist session', (done) => {
+    const cb = (error, session) => {
+      try {
+        expect(error).toBeUndefined();
+        expect(session).toBeUndefined();
+        done();
+      } catch (error) {
+        done(error);
+      }
+    };
+    store.get('no_session', cb);
+  });
+
+  test('error', (done) => {
+    client.needThrowError = true;
+    const cb = (error) => {
+      try {
+        expect(error).toBeDefined();
+        done();
+      } catch (error) {
+        done(error);
+      }
+    };
+    store.get('hoge', cb);
+  });
+});
