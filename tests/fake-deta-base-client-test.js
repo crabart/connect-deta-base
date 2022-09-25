@@ -58,6 +58,62 @@ describe('Fake Clinet put test', () => {
     expect(checkData.__expire).toBeDefined();
   });
 
+  test('no expire', async () => {
+    const key = 'sess:new_ID';
+    const sessionData = {
+      cookie: { param1: 'hoge', param2: 100 },
+      message: 'this is message',
+    };
+
+    const ret = await client.put({ sessionData: sessionData }, key);
+
+    const checkData = client.savedData.find((element) => {
+      return element.key === key;
+    });
+
+    expect(ret.key).toBe(key);
+    expect(ret.sessionData).toEqual(sessionData);
+    expect(ret.__expire).toBeUndefined();
+    expect(checkData.key).toBe(key);
+    expect(checkData.sessionData).toEqual(sessionData);
+    expect(checkData.__expire).toBeUndefined();
+  });
+
+  test('expireAt', async () => {
+    const key = 'sess:new_ID';
+    const sessionData = {
+      cookie: { param1: 'hoge', param2: 100 },
+      message: 'this is message',
+    };
+    const expire = { expireAt: Date.now() / 1000 + 600 };
+
+    const ret = await client.put({ sessionData: sessionData }, key, expire);
+
+    const checkData = client.savedData.find((element) => {
+      return element.key === key;
+    });
+
+    expect(ret.key).toBe(key);
+    expect(ret.sessionData).toEqual(sessionData);
+    expect(ret.__expire).toBeDefined();
+    expect(checkData.key).toBe(key);
+    expect(checkData.sessionData).toEqual(sessionData);
+    expect(checkData.__expire).toBeDefined();
+  });
+
+  test('both expireIn and expireAt', async () => {
+    const key = 'sess:new_ID';
+    const sessionData = {
+      cookie: { param1: 'hoge', param2: 100 },
+      message: 'this is message',
+    };
+    const expire = { expireIn: 600, expireAt: Date.now() / 1000 + 600 };
+
+    expect(
+      client.put({ sessionData: sessionData }, key, expire)
+    ).rejects.toThrow(Error);
+  });
+
   test('error', async () => {
     client.needThrowError = true;
 

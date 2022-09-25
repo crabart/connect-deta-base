@@ -88,16 +88,29 @@ class FakeDetaBaseClient {
           throw Error('Unauthorized');
         }
 
-        const isExpire = expire && expire.expireIn && true;
-        const expireTime = isExpire && Date.now() + expire.expireIn * 1000;
+        const isExpireIn = expire && expire.expireIn && true;
+        const isExpireAt = expire && expire.expireAt && true;
 
-        const data = isExpire
-          ? {
-              key: key,
-              sessionData: { ...sessionData },
-              __expire: expireTime,
-            }
-          : { key: key, sessionData: { ...sessionData } };
+        if (isExpireIn && isExpireAt) {
+          throw Error("can't set both expireIn and expireAt options");
+        }
+
+        let expireTime;
+
+        if (isExpireIn) {
+          expireTime = isExpireIn && Date.now() + expire.expireIn * 1000;
+        } else if (isExpireAt) {
+          expireTime = expire.expireAt;
+        }
+
+        const data =
+          isExpireIn || isExpireAt
+            ? {
+                key: key,
+                sessionData: { ...sessionData },
+                __expire: expireTime,
+              }
+            : { key: key, sessionData: { ...sessionData } };
 
         const index = this.savedData.findIndex((element) => {
           return element.key === key;
