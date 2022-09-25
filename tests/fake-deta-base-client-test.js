@@ -27,10 +27,10 @@ describe('Fake Clinet put test', () => {
 
     expect(ret.key).toBe(key);
     expect(ret.sessionData).toEqual(sessionData);
-    expect(ret.__expire).toBeDefined();
+    expect(ret.__expires).toBeDefined();
     expect(checkData.key).toBe(key);
     expect(checkData.sessionData).toEqual(sessionData);
-    expect(checkData.__expire).toBeDefined();
+    expect(checkData.__expires).toBeDefined();
   });
 
   test('same id', async () => {
@@ -52,10 +52,10 @@ describe('Fake Clinet put test', () => {
     expect(client.savedData.length).toBe(4);
     expect(ret.key).toBe(key);
     expect(ret.sessionData).toEqual(sessionData2);
-    expect(ret.__expire).toBeDefined();
+    expect(ret.__expires).toBeDefined();
     expect(checkData.key).toBe(key);
     expect(checkData.sessionData).toEqual(sessionData2);
-    expect(checkData.__expire).toBeDefined();
+    expect(checkData.__expires).toBeDefined();
   });
 
   test('no expire', async () => {
@@ -73,10 +73,10 @@ describe('Fake Clinet put test', () => {
 
     expect(ret.key).toBe(key);
     expect(ret.sessionData).toEqual(sessionData);
-    expect(ret.__expire).toBeUndefined();
+    expect(ret.__expires).toBeUndefined();
     expect(checkData.key).toBe(key);
     expect(checkData.sessionData).toEqual(sessionData);
-    expect(checkData.__expire).toBeUndefined();
+    expect(checkData.__expires).toBeUndefined();
   });
 
   test('expireAt', async () => {
@@ -95,10 +95,10 @@ describe('Fake Clinet put test', () => {
 
     expect(ret.key).toBe(key);
     expect(ret.sessionData).toEqual(sessionData);
-    expect(ret.__expire).toBeDefined();
+    expect(ret.__expires).toBeDefined();
     expect(checkData.key).toBe(key);
     expect(checkData.sessionData).toEqual(sessionData);
-    expect(checkData.__expire).toBeDefined();
+    expect(checkData.__expires).toBeDefined();
   });
 
   test('both expireIn and expireAt', async () => {
@@ -140,7 +140,7 @@ describe('Fake Clinet get test', () => {
       cookie: { param1: 'hoge', param2: 100 },
       message: 'this is message',
     });
-    expect(ret.__expire).toBeDefined();
+    expect(ret.__expires).toBeDefined();
   });
 
   test('with no expire', async () => {
@@ -152,7 +152,7 @@ describe('Fake Clinet get test', () => {
       cookie: { param1: 'foo', param2: 3000 },
       other: 'other',
     });
-    expect(ret.__expire).toBeUndefined();
+    expect(ret.__expires).toBeUndefined();
   });
 
   test('wiht no key', async () => {
@@ -208,7 +208,7 @@ describe('Fake Clinet get test fetch test', () => {
     expect(last).toBeUndefined();
     expect(count).toBe(4);
     {
-      const { __expire, ...item } = items[0];
+      const { __expires, ...item } = items[0];
       expect(item).toEqual({
         key: 'sess:hoge',
         sessionData: {
@@ -216,7 +216,7 @@ describe('Fake Clinet get test fetch test', () => {
           message: 'this is message',
         },
       });
-      expect(__expire).toBeDefined();
+      expect(__expires).toBeDefined();
     }
 
     {
@@ -230,7 +230,7 @@ describe('Fake Clinet get test fetch test', () => {
     }
 
     {
-      const { __expire, ...item } = items[2];
+      const { __expires, ...item } = items[2];
       expect(item).toEqual({
         key: 'sess:bar',
         sessionData: {
@@ -238,11 +238,11 @@ describe('Fake Clinet get test fetch test', () => {
           num: 111,
         },
       });
-      expect(__expire).toBeDefined();
+      expect(__expires).toBeDefined();
     }
 
     {
-      const { __expire, ...item } = items[3];
+      const { __expires, ...item } = items[3];
       expect(item).toEqual({
         key: 'another:hoge',
         sessionData: {
@@ -250,7 +250,7 @@ describe('Fake Clinet get test fetch test', () => {
           message: 'this is message',
         },
       });
-      expect(__expire).toBeDefined();
+      expect(__expires).toBeDefined();
     }
   });
 
@@ -260,7 +260,7 @@ describe('Fake Clinet get test fetch test', () => {
     expect(last).toBeUndefined();
     expect(count).toBe(4);
     {
-      const { __expire, ...item } = items[0];
+      const { __expires, ...item } = items[0];
       expect(item).toEqual({
         key: 'sess:hoge',
         sessionData: {
@@ -268,7 +268,7 @@ describe('Fake Clinet get test fetch test', () => {
           message: 'this is message',
         },
       });
-      expect(__expire).toBeDefined();
+      expect(__expires).toBeDefined();
     }
 
     {
@@ -282,7 +282,7 @@ describe('Fake Clinet get test fetch test', () => {
     }
 
     {
-      const { __expire, ...item } = items[2];
+      const { __expires, ...item } = items[2];
       expect(item).toEqual({
         key: 'sess:bar',
         sessionData: {
@@ -290,11 +290,11 @@ describe('Fake Clinet get test fetch test', () => {
           num: 111,
         },
       });
-      expect(__expire).toBeDefined();
+      expect(__expires).toBeDefined();
     }
 
     {
-      const { __expire, ...item } = items[3];
+      const { __expires, ...item } = items[3];
       expect(item).toEqual({
         key: 'another:hoge',
         sessionData: {
@@ -302,7 +302,7 @@ describe('Fake Clinet get test fetch test', () => {
           message: 'this is message',
         },
       });
-      expect(__expire).toBeDefined();
+      expect(__expires).toBeDefined();
     }
   });
 
@@ -313,7 +313,7 @@ describe('Fake Clinet get test fetch test', () => {
     expect(last).toBeUndefined();
     expect(count).toBe(3);
     {
-      const { __expire, ...item } = items[0];
+      const { __expires, ...item } = items[0];
       expect(item).toEqual({
         key: 'sess:hoge',
         sessionData: {
@@ -321,7 +321,7 @@ describe('Fake Clinet get test fetch test', () => {
           message: 'this is message',
         },
       });
-      expect(__expire).toBeDefined();
+      expect(__expires).toBeDefined();
     }
 
     {
@@ -335,7 +335,7 @@ describe('Fake Clinet get test fetch test', () => {
     }
 
     {
-      const { __expire, ...item } = items[2];
+      const { __expires, ...item } = items[2];
       expect(item).toEqual({
         key: 'sess:bar',
         sessionData: {
@@ -343,7 +343,7 @@ describe('Fake Clinet get test fetch test', () => {
           num: 111,
         },
       });
-      expect(__expire).toBeDefined();
+      expect(__expires).toBeDefined();
     }
   });
 
@@ -369,7 +369,7 @@ describe('Fake Clinet get test fetch test', () => {
     });
     expect(count).toBe(2);
     {
-      const { __expire, ...item } = items[0];
+      const { __expires, ...item } = items[0];
       expect(item).toEqual({
         key: 'sess:hoge',
         sessionData: {
@@ -377,7 +377,7 @@ describe('Fake Clinet get test fetch test', () => {
           message: 'this is message',
         },
       });
-      expect(__expire).toBeDefined();
+      expect(__expires).toBeDefined();
     }
 
     {

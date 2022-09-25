@@ -69,7 +69,7 @@ describe('all', () => {
         expect(error).toBeNull();
         expect(items.length).toBe(3);
         {
-          const { __expire, ...item } = items[0];
+          const { __expires: __expires, ...item } = items[0];
           expect(item).toEqual({
             key: 'sess:hoge',
             sessionData: {
@@ -77,11 +77,11 @@ describe('all', () => {
               message: 'this is message',
             },
           });
-          expect(__expire).toBeDefined();
+          expect(__expires).toBeDefined();
         }
 
         {
-          const { __expire, ...item } = items[1];
+          const { __expires, ...item } = items[1];
           expect(item).toEqual({
             key: 'sess:foo',
             sessionData: {
@@ -89,11 +89,11 @@ describe('all', () => {
               other: 'other',
             },
           });
-          expect(__expire).toBeDefined();
+          expect(__expires).toBeDefined();
         }
 
         {
-          const { __expire, ...item } = items[2];
+          const { __expires, ...item } = items[2];
           expect(item).toEqual({
             key: 'sess:bar',
             sessionData: {
@@ -101,7 +101,7 @@ describe('all', () => {
               num: 111,
             },
           });
-          expect(__expire).toBeDefined();
+          expect(__expires).toBeDefined();
         }
 
         done();

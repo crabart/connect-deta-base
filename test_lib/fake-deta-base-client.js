@@ -108,7 +108,7 @@ class FakeDetaBaseClient {
             ? {
                 key: key,
                 sessionData: { ...sessionData },
-                __expire: expireTime,
+                __expires: expireTime,
               }
             : { key: key, sessionData: { ...sessionData } };
 
