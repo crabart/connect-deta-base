@@ -177,3 +177,64 @@ describe('clear', () => {
     store.clear(cb);
   });
 });
+
+describe('destroy', () => {
+  let store;
+  beforeEach(async () => {
+    const option = { client: client };
+    store = new ConnectDetaBase(option);
+  });
+
+  test('exist session', (done) => {
+    const index = client.savedData.findIndex((it) =>
+      it.key.startsWith(store.prefix + 'hoge')
+    );
+
+    expect(index).not.toBe(-1);
+
+    const beforeLength = client.savedData.length;
+
+    const cb = (error) => {
+      try {
+        expect(error).toBeNull();
+        const index = client.savedData.findIndex((it) =>
+          it.key.startsWith(store.prefix + 'hoge')
+        );
+        expect(index).toBe(-1);
+        expect(client.savedData.length).toBe(beforeLength - 1);
+        done();
+      } catch (error) {
+        done(error);
+      }
+    };
+    store.destroy('hoge', cb);
+  });
+
+  test('not exist session', (done) => {
+    const beforeLength = client.savedData.length;
+
+    const cb = (error) => {
+      try {
+        expect(error).toBeNull();
+        expect(client.savedData.length).toBe(beforeLength);
+        done();
+      } catch (error) {
+        done(error);
+      }
+    };
+    store.destroy('no_session', cb);
+  });
+
+  test('error', (done) => {
+    client.needThrowError = true;
+    const cb = (error) => {
+      try {
+        expect(error).toBeDefined();
+        done();
+      } catch (error) {
+        done(error);
+      }
+    };
+    store.destroy('hoge', cb);
+  });
+});
