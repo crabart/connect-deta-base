@@ -1,4 +1,4 @@
-**connect-deta-base** provides Redis session storage for Express.
+**connect-deta-base** provides Deta Base session storage for Express.
 
 ## Installation
 
