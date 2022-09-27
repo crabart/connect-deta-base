@@ -75,4 +75,5 @@ Ref: https://github.com/expressjs/session#storetouchsid-session-callback
 Enables key expiration (default: `true`).
 
 This option enables key expiration requiring the user to manually manage key cleanup outside of `connect-deta-base`. Only set false if you know what you are doing and have an exceptional case where you need to manage your own expiration in Deta Base.
+
 **Note**: This has no effect on `express-session` setting cookie expiration.
