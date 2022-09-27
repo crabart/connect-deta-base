@@ -14,7 +14,9 @@ beforeEach(async () => {
 
 describe('constructor', () => {
   test('no client', () => {
-    expect(() => new ConnectDetaBase()).toThrow(Error);
+    expect(() => new ConnectDetaBase()).toThrow(
+      'A client must be provided to the DetaBaseStore'
+    );
   });
 
   test('default and client', () => {
@@ -119,7 +121,7 @@ describe('all', () => {
 
     const cb = (error) => {
       try {
-        expect(error).toBeDefined();
+        expect(error).toBe('Unauthorized');
         done();
       } catch (error) {
         done(error);
@@ -171,7 +173,7 @@ describe('clear', () => {
     client.needThrowError = true;
     const cb = (error) => {
       try {
-        expect(error).toBeDefined();
+        expect(error).toBe('Unauthorized');
         done();
       } catch (error) {
         done(error);
@@ -232,7 +234,7 @@ describe('destroy', () => {
     client.needThrowError = true;
     const cb = (error) => {
       try {
-        expect(error).toBeDefined();
+        expect(error).toBe('Unauthorized');
         done();
       } catch (error) {
         done(error);
@@ -282,7 +284,7 @@ describe('get', () => {
     client.needThrowError = true;
     const cb = (error) => {
       try {
-        expect(error).toBeDefined();
+        expect(error).toBe('Unauthorized');
         done();
       } catch (error) {
         done(error);
@@ -305,7 +307,7 @@ describe('set', () => {
 
     const cb = (error) => {
       try {
-        expect(error).toBeDefined();
+        expect(error).toBeNull();
         const dat = client.savedData.find(
           (it) => it.key === store.prefix + 'new_session'
         );
@@ -338,7 +340,7 @@ describe('set', () => {
 
     const cb = (error) => {
       try {
-        expect(error).toBeDefined();
+        expect(error).toBeNull();
         const dat = client.savedData.find(
           (it) => it.key === store.prefix + 'new_session'
         );
@@ -372,7 +374,7 @@ describe('set', () => {
 
     const cb = (error) => {
       try {
-        expect(error).toBeDefined();
+        expect(error).toBeNull();
         const dat = client.savedData.find(
           (it) => it.key === store.prefix + 'new_session'
         );
@@ -408,7 +410,7 @@ describe('set', () => {
     client.needThrowError = true;
     const cb = (error) => {
       try {
-        expect(error).toBeDefined();
+        expect(error).toBe('Unauthorized');
         done();
       } catch (error) {
         done(error);
@@ -449,7 +451,7 @@ describe('length', () => {
     client.needThrowError = true;
     const cb = (error, count) => {
       try {
-        expect(error).toBeDefined();
+        expect(error).toBe('Unauthorized');
         expect(count).toBeUndefined();
         done();
       } catch (error) {
