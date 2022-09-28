@@ -16,7 +16,7 @@
     "url": "git@github.com:crabart/connect-deta-base.git"
   },
   "engines": {
-    "node": ">=12"
+    "node": ">=14"
   },
   "keywords": [
     "connect",
