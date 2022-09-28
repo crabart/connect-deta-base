@@ -1,3 +1,5 @@
+[![Unit test](https://github.com/crabart/connect-deta-base/actions/workflows/unit_test.yml/badge.svg)](https://github.com/crabart/connect-deta-base/actions/workflows/unit_test.yml)
+
 **connect-deta-base** provides Deta Base session storage for Express.
 
 ## Installation
