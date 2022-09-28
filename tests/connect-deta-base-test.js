@@ -483,7 +483,7 @@ describe('touch', () => {
 
     const cb = (error) => {
       try {
-        expect(error).toBeNull();
+        expect(error).toBeUndefined();
         const after = client.savedData.find(
           (it) => it.key === store.prefix + 'hoge'
         );
@@ -511,7 +511,7 @@ describe('touch', () => {
 
     const cb = (error) => {
       try {
-        expect(error).toBeNull();
+        expect(error).toBeUndefined();
         const after = client.savedData.find(
           (it) => it.key === store.prefix + 'hoge'
         );
@@ -562,6 +562,7 @@ describe('touch', () => {
       store.touch('hoge', new_session, cb);
     }, 1000);
   });
+
   test('enable touch with expire', (done) => {
     const expires = new Date(Date.now() + 600 * 1000).toISOString();
 
@@ -588,5 +589,24 @@ describe('touch', () => {
     };
 
     store.touch('hoge', new_session, cb);
+  });
+
+  test('no session', (done) => {
+    const new_session = {
+      cookie: { param1: 'change', param2: 200 },
+      message: 'message changed',
+    };
+
+    const cb = (error) => {
+      try {
+        expect(error).toBeUndefined();
+
+        done();
+      } catch (error) {
+        done(error);
+      }
+    };
+
+    store.touch('no_session', new_session, cb);
   });
 });
