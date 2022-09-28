@@ -1,20 +1,21 @@
+[![Unit test](https://github.com/crabart/connect-deta-base/actions/workflows/unit_test.yml/badge.svg)](https://github.com/crabart/connect-deta-base/actions/workflows/unit_test.yml)
+
 **connect-deta-base** provides Deta Base session storage for Express.
 
 ## Installation
 
+```
+npm install express deta express-session connect-deta-base
+```
+
 <!-- ```
-npm install deta express-session connect-deta-base
-```
-
-```
-yarn add deta express-session connect-deta-base
+yarn add express deta express-session connect-deta-base
 ``` -->
-
-TBD
 
 ## API
 
 ```
+const express = require("express");
 const session = require("express-session");
 const DetaBaseStore = require("connect-deta-base")(session);
 
