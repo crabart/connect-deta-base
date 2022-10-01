@@ -1,6 +1,7 @@
 [![Unit test](https://github.com/crabart/connect-deta-base/actions/workflows/unit_test.yml/badge.svg)](https://github.com/crabart/connect-deta-base/actions/workflows/unit_test.yml)
 
 **connect-deta-base** provides Deta Base session storage for Express.
+
 TypeScript is supported limitedly.
 
 ## Installation
@@ -20,6 +21,10 @@ npm install --save-dev @types/express @types/express-session
 ```
 
 ## API
+
+For initialize Deta Base, see also Deta Base official docs.
+
+Ref: https://docs.deta.sh/docs/base/sdk#instantiating
 
 ### Use JavaScript
 
@@ -43,10 +48,6 @@ app.use(
   })
 );
 ```
-
-For initialize Deta Base, see also Deta Base official docs.
-
-Ref: https://docs.deta.sh/docs/base/sdk#instantiating
 
 ### Use TypeScript
 
@@ -113,9 +114,9 @@ This option enables key expiration requiring the user to manually manage key cle
 
 **Note**: This has no effect on `express-session` setting cookie expiration.
 
-### Limited TypeScript
+### Limited support for TypeScript
 
-These method are not supported yet.
+These methods are not supported yet. Only JavaScript.
 
 - all
 - clear
