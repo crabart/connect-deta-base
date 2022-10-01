@@ -14,14 +14,22 @@ declare module 'connect-deta-base' {
   namespace s {
     interface DetaBaseStore extends session.Store {
       new (options: DetaBaseStoreOptions): DetaBaseStore;
-    }
-    interface DetaBaseStoreOptions {
-      client: Base;
+      client: Client;
       prefix?: string | undefined;
       ttl?: number | undefined;
       enableTTL?: boolean | undefined;
       enableTouch?: boolean | undefined;
     }
+
+    interface DetaBaseStoreOptions {
+      client: Client;
+      prefix?: string | undefined;
+      ttl?: number | undefined;
+      enableTTL?: boolean | undefined;
+      enableTouch?: boolean | undefined;
+    }
+
+    interface Client extends Base {}
   }
 
   export = s;
