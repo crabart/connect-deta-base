@@ -1,4 +1,5 @@
 [![Unit test](https://github.com/crabart/connect-deta-base/actions/workflows/unit_test.yml/badge.svg)](https://github.com/crabart/connect-deta-base/actions/workflows/unit_test.yml)
+[![Coverage Status](https://coveralls.io/repos/github/crabart/connect-deta-base/badge.svg)](https://coveralls.io/github/crabart/connect-deta-base)
 
 **connect-deta-base** provides Deta Base session storage for Express.
 
