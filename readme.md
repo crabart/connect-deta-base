@@ -2,6 +2,8 @@
 
 **connect-deta-base** provides Deta Base session storage for Express.
 
+TypeScript is supported limitedly.
+
 ## Installation
 
 ```
@@ -12,7 +14,19 @@ npm install express deta express-session connect-deta-base
 yarn add express deta express-session connect-deta-base
 ``` -->
 
+To develop with TypeScript, install below too.
+
+```
+npm install --save-dev @types/express @types/express-session
+```
+
 ## API
+
+For initialize Deta Base, see also Deta Base official docs.
+
+Ref: https://docs.deta.sh/docs/base/sdk#instantiating
+
+### Use JavaScript
 
 ```
 const express = require("express");
@@ -35,9 +49,30 @@ app.use(
 );
 ```
 
-For initialize Deta Base, see also Deta Base official docs.
+### Use TypeScript
 
-Ref: https://docs.deta.sh/docs/base/sdk#instantiating
+```
+import express from "express";
+import session from "express-session";
+import DetaBaseStore from "connect-deta-base";
+
+import { Deta } from "deta";
+const deta = Deta("project key");
+const detaBaseClient = deta.Base("sessions");
+
+const detaBaseStore = DetaBaseStore(session);
+
+const app = express();
+
+app.use(
+  session({
+    store: new detaBaseStore({ client: detaBaseClient }),
+    saveUninitialized: false,
+    secret: "keyboard cat",
+    resave: false,
+  })
+);
+```
 
 ### DetaBaseStore(options)
 
@@ -47,7 +82,7 @@ The DetaBaseStore requires a Deta Base client.
 
 ##### client
 
-An instance of Deta Base client.
+An instance of Deta Base client (required).
 
 ##### prefix
 
@@ -78,3 +113,15 @@ Enables key expiration (default: `true`).
 This option enables key expiration requiring the user to manually manage key cleanup outside of `connect-deta-base`. Only set false if you know what you are doing and have an exceptional case where you need to manage your own expiration in Deta Base.
 
 **Note**: This has no effect on `express-session` setting cookie expiration.
+
+### Limited support for TypeScript
+
+These methods are not supported yet. Only JavaScript.
+
+- all
+- clear
+- destroy
+- get
+- set
+- length
+- touch

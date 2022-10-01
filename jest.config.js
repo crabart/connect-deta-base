@@ -8,4 +8,8 @@ module.exports = {
   coverageDirectory: 'coverage',
   coverageProvider: 'v8',
   testMatch: ['**/tests/**/*.[jt]s?(x)'],
+  coveragePathIgnorePatterns: ['/node_modules/', 'test_lib/*'],
+  transform: {
+    '^.+\\.ts$': 'ts-jest',
+  },
 };
