@@ -29,7 +29,7 @@ declare module 'connect-deta-base' {
       enableTouch?: boolean | undefined;
     }
 
-    interface Client extends Base {}
+    export interface Client extends Base {}
   }
 
   export = s;
