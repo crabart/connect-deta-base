@@ -15,10 +15,10 @@ declare module 'connect-deta-base' {
     interface DetaBaseStore extends session.Store {
       new (options: DetaBaseStoreOptions): DetaBaseStore;
       client: Client;
-      prefix?: string | undefined;
-      ttl?: number | undefined;
-      enableTTL?: boolean | undefined;
-      enableTouch?: boolean | undefined;
+      prefix: string;
+      ttl: number;
+      enableTTL: boolean;
+      enableTouch: boolean;
     }
 
     interface DetaBaseStoreOptions {

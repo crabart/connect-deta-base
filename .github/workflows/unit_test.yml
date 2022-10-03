@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  test-node-14:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,6 +20,29 @@ jobs:
 
       - name: Install dependencies
         run: npm i
+
+      - name: Patch dependencies
+        run: patch ./node_modules/deta/dist/types/base/base.d.ts ./test_patch/base.d.ts.patch
+
+      - name: Run tests
+        run: npm run test
+
+  test-node-16:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm i
+
+      - name: Patch dependencies
+        run: patch ./node_modules/deta/dist/types/base/base.d.ts ./test_patch/base.d.ts.patch
 
       - name: Run tests
         run: npm run test -- --coverage

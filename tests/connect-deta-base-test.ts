@@ -1,38 +1,625 @@
-import { describe, expect, test } from '@jest/globals';
-import session from 'express-session';
-import DetaBaseStore from 'connect-deta-base';
-import { Deta } from 'deta';
-const deta = Deta('dummy');
-const db = deta.Base('dummy');
+import { describe, expect, test, beforeEach } from '@jest/globals';
+import session, { SessionData } from 'express-session';
+import FakeDetaBaseClient from '../test_lib/client/fake-deta-base-client';
+import ConnectDetaBase, { DetaBaseStore } from 'connect-deta-base';
+const cdb = ConnectDetaBase(session);
+const client = new FakeDetaBaseClient();
+const SetupUtil = require('../test_lib/setup-util');
+
+declare module 'express-session' {
+  interface SessionData {
+    __expires?: number;
+    message?: string;
+  }
+}
+
+beforeEach(async () => {
+  client.savedData.splice(0);
+  client.needThrowError = false;
+  client.limit = 1000;
+  const option = { client: client };
+  await SetupUtil.setupDefaultSessions(new cdb(option));
+});
 
 describe('constructor', () => {
-  test('default', () => {
-    const detaBaseStore = DetaBaseStore(session);
-    const dbs = new detaBaseStore({ client: db });
-    expect(dbs.client).toEqual(db);
-    expect(dbs.prefix).toBe('sess:');
-    expect(dbs.ttl).toBe(86400);
-    expect(dbs.enableTTL).toBe(true);
-    expect(dbs.enableTouch).toBe(true);
+  test('hoge', () => {
+    expect(1).toBe(1);
   });
 
-  test('set all', () => {
-    const detaBaseStore = DetaBaseStore(session);
-    const prefix = 'prefix:';
-    const ttl = 600;
-    const enableTouch = false;
-    const enableTTL = false;
-    const dbs = new detaBaseStore({
-      client: db,
-      prefix: prefix,
-      ttl: ttl,
-      enableTouch: enableTouch,
-      enableTTL: enableTTL,
-    });
-    expect(dbs.client).toEqual(db);
-    expect(dbs.prefix).toBe(prefix);
-    expect(dbs.ttl).toBe(ttl);
-    expect(dbs.enableTTL).toBe(enableTouch);
-    expect(dbs.enableTouch).toBe(enableTTL);
+  test('default and client', () => {
+    const option = { client: client };
+    const store = new cdb(option);
+
+    expect(store.prefix).toBe('sess:');
+    expect(store.ttl).toBe(86400);
+    expect(store.enableTTL).toBe(true);
+    expect(store.enableTouch).toBe(true);
+  });
+
+  test('set options', () => {
+    const option = {
+      prefix: 'prefix',
+      client: client,
+      ttl: 1000,
+      enableTTL: false,
+      enableTouch: false,
+    };
+    const store = new cdb(option);
+
+    expect(store.prefix).toBe('prefix');
+    expect(store.ttl).toBe(1000);
+    expect(store.enableTTL).toBe(false);
+    expect(store.enableTouch).toBe(false);
+  });
+
+  test('set only enable TTL', () => {
+    const option = {
+      client: client,
+      enableTTL: false,
+    };
+    const store = new cdb(option);
+
+    expect(store.prefix).toBe('sess:');
+    expect(store.ttl).toBe(86400);
+    expect(store.enableTTL).toBe(false);
+    expect(store.enableTouch).toBe(true);
+  });
+});
+
+describe('all', () => {
+  let store: DetaBaseStore;
+  beforeEach(async () => {
+    const option = { client: client };
+    store = new cdb(option);
+  });
+
+  test('default', (done) => {
+    const cb = (
+      err: any,
+      obj: SessionData[] | { [sid: string]: SessionData } | null | undefined
+    ) => {
+      try {
+        const items = obj as SessionData[];
+        expect(err).toBeNull();
+        expect(obj?.length).toBe(3);
+        {
+          const { __expires: __expires, ...item } = items[0];
+          expect(item).toEqual({
+            key: 'sess:hoge',
+            sessionData: {
+              cookie: { param1: 'hoge', param2: 100 },
+              message: 'this is message',
+            },
+          });
+          expect(__expires).toBeDefined();
+        }
+        {
+          const { __expires, ...item } = items[1];
+          expect(item).toEqual({
+            key: 'sess:foo',
+            sessionData: {
+              cookie: { param1: 'foo', param2: 3000 },
+              other: 'other',
+            },
+          });
+          expect(__expires).toBeDefined();
+        }
+        {
+          const { __expires, ...item } = items[2];
+          expect(item).toEqual({
+            key: 'sess:bar',
+            sessionData: {
+              cookie: { param1: 'barbar', param2: 5500 },
+              num: 111,
+            },
+          });
+          expect(__expires).toBeDefined();
+        }
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+
+    store.all ? store.all(cb) : {};
+  });
+
+  test('error', (done) => {
+    client.needThrowError = true;
+
+    const cb = (error: any) => {
+      try {
+        expect(error).toBe('Unauthorized');
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+    store.all ? store.all(cb) : {};
+  });
+});
+
+describe('clear', () => {
+  let store: DetaBaseStore;
+  beforeEach(async () => {
+    const option = { client: client };
+    store = new cdb(option);
+  });
+
+  test('default', (done) => {
+    const cb = () => {
+      try {
+        const filterd = client.savedData.filter((it) => {
+          const prefix: string = store.prefix;
+          return it.key.startsWith(prefix);
+        });
+        expect(filterd.length).toBe(0);
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+    store.clear ? store.clear(cb) : {};
+  });
+
+  test('limit', (done) => {
+    client.limit = 2;
+    const cb = () => {
+      try {
+        const filterd = client.savedData.filter((it) => {
+          const prefix: string = store.prefix;
+          return it.key.startsWith(prefix);
+        });
+        expect(filterd.length).toBe(0);
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+    store.clear ? store.clear(cb) : {};
+  });
+
+  test('error', (done) => {
+    client.needThrowError = true;
+    const cb = (error: any) => {
+      try {
+        expect(error).toBe('Unauthorized');
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+    store.clear ? store.clear(cb) : {};
+  });
+});
+
+describe('destroy', () => {
+  let store: DetaBaseStore;
+  beforeEach(async () => {
+    const option = { client: client };
+    store = new cdb(option);
+  });
+
+  test('exist session', (done) => {
+    const index = client.savedData.findIndex((it) =>
+      it.key.startsWith(store.prefix + 'hoge')
+    );
+
+    expect(index).not.toBe(-1);
+
+    const beforeLength = client.savedData.length;
+
+    const cb = (error: any) => {
+      try {
+        expect(error).toBeNull();
+        const index = client.savedData.findIndex((it) =>
+          it.key.startsWith(store.prefix + 'hoge')
+        );
+        expect(index).toBe(-1);
+        expect(client.savedData.length).toBe(beforeLength - 1);
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+    store.destroy('hoge', cb);
+  });
+
+  test('not exist session', (done) => {
+    const beforeLength = client.savedData.length;
+
+    const cb = (error: any) => {
+      try {
+        expect(error).toBeNull();
+        expect(client.savedData.length).toBe(beforeLength);
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+    store.destroy('no_session', cb);
+  });
+
+  test('error', (done) => {
+    client.needThrowError = true;
+    const cb = (error: any) => {
+      try {
+        expect(error).toBe('Unauthorized');
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+    store.destroy('hoge', cb);
+  });
+});
+
+describe('get', () => {
+  let store: DetaBaseStore;
+  beforeEach(async () => {
+    const option = { client: client };
+    store = new cdb(option);
+  });
+  test('exist session', (done) => {
+    const cb = (error: any, session?: SessionData | null) => {
+      try {
+        expect(error).toBeNull();
+        expect(session).toEqual({
+          cookie: { param1: 'hoge', param2: 100 },
+          message: 'this is message',
+        });
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+    store.get('hoge', cb);
+  });
+
+  test('not exist session', (done) => {
+    const cb = (error: any, session?: SessionData | null) => {
+      try {
+        expect(error).toBeUndefined();
+        expect(session).toBeUndefined();
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+    store.get('no_session', cb);
+  });
+
+  test('error', (done) => {
+    client.needThrowError = true;
+    const cb = (error: any) => {
+      try {
+        expect(error).toBe('Unauthorized');
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+    store.get('hoge', cb);
+  });
+});
+
+describe('set', () => {
+  let store: DetaBaseStore;
+  beforeEach(async () => {
+    const option = { client: client };
+    store = new cdb(option);
+  });
+
+  test('disable TTL', (done) => {
+    store.enableTTL = false;
+    const expires = new Date(Date.now() + 60 * 1000);
+
+    const cb = (error: any) => {
+      try {
+        expect(error).toBeNull();
+        const dat = client.savedData.find(
+          (it) => it.key === store.prefix + 'new_session'
+        );
+        expect(dat).toEqual({
+          key: store.prefix + 'new_session',
+          sessionData: {
+            cookie: {
+              originalMaxAge: 86400,
+              path: 'hoge',
+              expires: expires,
+            },
+            message: 'this is message',
+          },
+        });
+
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+
+    store.set(
+      'new_session',
+      {
+        cookie: { originalMaxAge: 86400, path: 'hoge', expires: expires },
+        message: 'this is message',
+      },
+      cb
+    );
+  });
+
+  test('expires exist', (done) => {
+    const expires = new Date(Date.now() + 60 * 1000);
+
+    const cb = (error: any) => {
+      try {
+        expect(error).toBeNull();
+        const dat = client.savedData.find(
+          (it) => it.key === store.prefix + 'new_session'
+        );
+        expect(dat).toEqual({
+          key: store.prefix + 'new_session',
+          sessionData: {
+            cookie: { originalMaxAge: 86400, path: 'hoge', expires: expires },
+            message: 'this is message',
+          },
+          __expires: Math.round(new Date(expires).getTime() / 1000),
+        });
+
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+
+    store.set(
+      'new_session',
+      {
+        cookie: { originalMaxAge: 86400, path: 'hoge', expires: expires },
+        message: 'this is message',
+      },
+      cb
+    );
+  });
+
+  test('expires not exist', (done) => {
+    const execTime = new Date();
+
+    const cb = (error: any) => {
+      try {
+        expect(error).toBeNull();
+        const dat = client.savedData.find(
+          (it) => it.key === store.prefix + 'new_session'
+        );
+        expect(dat?.key).toBe(store.prefix + 'new_session');
+        expect(dat?.sessionData).toEqual({
+          cookie: { originalMaxAge: 86400, path: 'hoge' },
+          message: 'this is message',
+        });
+        expect(dat?.__expires).toBeLessThanOrEqual(
+          execTime.getTime() / 1000 + store.ttl + 5
+        );
+        expect(dat?.__expires).toBeGreaterThanOrEqual(
+          execTime.getTime() / 1000 + store.ttl - 5
+        );
+
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+
+    store.set(
+      'new_session',
+      {
+        cookie: { originalMaxAge: 86400, path: 'hoge' },
+        message: 'this is message',
+      },
+      cb
+    );
+  });
+
+  test('error', (done) => {
+    client.needThrowError = true;
+    const cb = (error: any) => {
+      try {
+        expect(error).toBe('Unauthorized');
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+    store.set(
+      'new_session',
+      {
+        cookie: { originalMaxAge: 86400, path: 'hoge' },
+        message: 'this is message',
+      },
+      cb
+    );
+  });
+});
+
+describe('length', () => {
+  let store: DetaBaseStore;
+  beforeEach(async () => {
+    const option = { client: client };
+    store = new cdb(option);
+  });
+
+  test('default', (done) => {
+    const cb = (error: any, length: number) => {
+      try {
+        expect(error).toBeNull();
+        expect(length).toBe(3);
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+    store.length ? store.length(cb) : {};
+  });
+
+  test('error', (done) => {
+    client.needThrowError = true;
+    const cb = (error: any, length: number) => {
+      try {
+        expect(error).toBe('Unauthorized');
+        expect(length).toBeUndefined();
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+    store.length ? store.length(cb) : {};
+  });
+});
+
+describe('touch', () => {
+  let store: DetaBaseStore;
+  beforeEach(async () => {
+    const option = { client: client };
+    store = new cdb(option);
+  });
+
+  test('disable touch', (done) => {
+    store.enableTouch = false;
+
+    const new_session = {
+      cookie: { originalMaxAge: 86400, path: 'hoge' },
+      message: 'message changed',
+    };
+
+    const before = {
+      ...client.savedData.find((it) => it.key === store.prefix + 'hoge'),
+    };
+
+    const cb = (error?: any) => {
+      try {
+        expect(error).toBeUndefined();
+        const after = client.savedData.find(
+          (it) => it.key === store.prefix + 'hoge'
+        );
+        expect(after).toEqual(before);
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+
+    store.touch ? store.touch('hoge', new_session, cb) : {};
+  });
+
+  test('disable ttl', (done) => {
+    store.enableTTL = false;
+
+    const new_session = {
+      cookie: { originalMaxAge: 86400, path: 'hoge' },
+      message: 'message changed',
+    };
+
+    const before = {
+      ...client.savedData.find((it) => it.key === store.prefix + 'hoge'),
+    };
+
+    const cb = (error?: any) => {
+      try {
+        expect(error).toBeUndefined();
+        const after = client.savedData.find(
+          (it) => it.key === store.prefix + 'hoge'
+        );
+        expect(after).toEqual(before);
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+
+    store.touch ? store.touch('hoge', new_session, cb) : {};
+  });
+
+  test('enable touch with no expire', (done) => {
+    const execTime = new Date();
+
+    const new_session = {
+      cookie: { originalMaxAge: 86400, path: 'hoge' },
+      message: 'message changed',
+    };
+
+    const before = {
+      ...client.savedData.find((it) => it.key === store.prefix + 'hoge'),
+    };
+
+    setTimeout(() => {
+      const cb = (error?: any) => {
+        try {
+          expect(error).toBeNull();
+          const after = client.savedData.find(
+            (it) => it.key === store.prefix + 'hoge'
+          );
+          expect(after?.sessionData).toEqual(new_session);
+          expect(after?.__expires).not.toBe(before.__expires);
+
+          expect(after?.__expires).toBeLessThanOrEqual(
+            execTime.getTime() / 1000 + store.ttl + 5
+          );
+          expect(after?.__expires).toBeGreaterThanOrEqual(
+            execTime.getTime() / 1000 + store.ttl - 5
+          );
+          done();
+        } catch (error: any) {
+          done(error);
+        }
+      };
+
+      store.touch ? store.touch('hoge', new_session, cb) : {};
+    }, 1000);
+  });
+
+  test('enable touch with expire', (done) => {
+    const expires = new Date(Date.now() + 600 * 1000);
+
+    const new_session = {
+      cookie: { originalMaxAge: 86400, path: 'hoge', expires: expires },
+      message: 'message changed',
+    };
+
+    const cb = (error?: any) => {
+      try {
+        expect(error).toBeNull();
+        const after = client.savedData.find(
+          (it) => it.key === store.prefix + 'hoge'
+        );
+        expect(after?.sessionData).toEqual(new_session);
+        expect(after?.__expires).toBe(
+          Math.round(new Date(expires).getTime() / 1000)
+        );
+
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+
+    store.touch ? store.touch('hoge', new_session, cb) : {};
+  });
+
+  test('no session', (done) => {
+    const new_session = {
+      cookie: { originalMaxAge: 86400, path: 'hoge' },
+      message: 'message changed',
+    };
+
+    const cb = (error?: any) => {
+      try {
+        expect(error).toBeUndefined();
+
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+
+    store.touch ? store.touch('no_session', new_session, cb) : {};
   });
 });
