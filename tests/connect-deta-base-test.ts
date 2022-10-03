@@ -439,3 +439,38 @@ describe('set', () => {
     );
   });
 });
+
+describe('length', () => {
+  let store: DetaBaseStore;
+  beforeEach(async () => {
+    const option = { client: client };
+    store = new cdb(option);
+  });
+
+  test('default', (done) => {
+    const cb = (error: any, length: number) => {
+      try {
+        expect(error).toBeNull();
+        expect(length).toBe(3);
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+    store.length ? store.length(cb) : {};
+  });
+
+  test('error', (done) => {
+    client.needThrowError = true;
+    const cb = (error: any, length: number) => {
+      try {
+        expect(error).toBe('Unauthorized');
+        expect(length).toBeUndefined();
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+    store.length ? store.length(cb) : {};
+  });
+});
