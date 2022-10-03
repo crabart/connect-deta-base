@@ -190,3 +190,64 @@ describe('clear', () => {
     store.clear ? store.clear(cb) : {};
   });
 });
+
+describe('destroy', () => {
+  let store: DetaBaseStore;
+  beforeEach(async () => {
+    const option = { client: client };
+    store = new cdb(option);
+  });
+
+  test('exist session', (done) => {
+    const index = client.savedData.findIndex((it) =>
+      it.key.startsWith(store.prefix + 'hoge')
+    );
+
+    expect(index).not.toBe(-1);
+
+    const beforeLength = client.savedData.length;
+
+    const cb = (error: any) => {
+      try {
+        expect(error).toBeNull();
+        const index = client.savedData.findIndex((it) =>
+          it.key.startsWith(store.prefix + 'hoge')
+        );
+        expect(index).toBe(-1);
+        expect(client.savedData.length).toBe(beforeLength - 1);
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+    store.destroy('hoge', cb);
+  });
+
+  test('not exist session', (done) => {
+    const beforeLength = client.savedData.length;
+
+    const cb = (error: any) => {
+      try {
+        expect(error).toBeNull();
+        expect(client.savedData.length).toBe(beforeLength);
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+    store.destroy('no_session', cb);
+  });
+
+  test('error', (done) => {
+    client.needThrowError = true;
+    const cb = (error: any) => {
+      try {
+        expect(error).toBe('Unauthorized');
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+    store.destroy('hoge', cb);
+  });
+});
