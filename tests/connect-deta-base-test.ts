@@ -65,9 +65,7 @@ describe('constructor', () => {
 });
 
 describe('all', () => {
-  const option = { client: client };
-
-  let store: DetaBaseStore = new cdb(option);
+  let store: DetaBaseStore;
   beforeEach(async () => {
     const option = { client: client };
     store = new cdb(option);
@@ -116,7 +114,7 @@ describe('all', () => {
           expect(__expires).toBeDefined();
         }
         done();
-      } catch (error) {
+      } catch (error: any) {
         done(error);
       }
     };
@@ -131,10 +129,64 @@ describe('all', () => {
       try {
         expect(error).toBe('Unauthorized');
         done();
-      } catch (error) {
+      } catch (error: any) {
         done(error);
       }
     };
     store.all ? store.all(cb) : {};
+  });
+});
+
+describe('clear', () => {
+  let store: DetaBaseStore;
+  beforeEach(async () => {
+    const option = { client: client };
+    store = new cdb(option);
+  });
+
+  test('default', (done) => {
+    const cb = () => {
+      try {
+        const filterd = client.savedData.filter((it) => {
+          const prefix: string = store.prefix ? store.prefix : '';
+          return it.key.startsWith(prefix);
+        });
+        expect(filterd.length).toBe(0);
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+    store.clear ? store.clear(cb) : {};
+  });
+
+  test('limit', (done) => {
+    client.limit = 2;
+    const cb = () => {
+      try {
+        const filterd = client.savedData.filter((it) => {
+          const prefix: string = store.prefix ? store.prefix : '';
+          return it.key.startsWith(prefix);
+        });
+        expect(filterd.length).toBe(0);
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+    store.clear ? store.clear(cb) : {};
+  });
+
+  test('error', (done) => {
+    client.needThrowError = true;
+    const cb = (error: any) => {
+      try {
+        expect(error).toBe('Unauthorized');
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+    store.clear ? store.clear(cb) : {};
   });
 });
