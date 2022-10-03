@@ -474,3 +474,152 @@ describe('length', () => {
     store.length ? store.length(cb) : {};
   });
 });
+
+describe('touch', () => {
+  let store: DetaBaseStore;
+  beforeEach(async () => {
+    const option = { client: client };
+    store = new cdb(option);
+  });
+
+  test('disable touch', (done) => {
+    store.enableTouch = false;
+
+    const new_session = {
+      cookie: { originalMaxAge: 86400, path: 'hoge' },
+      message: 'message changed',
+    };
+
+    const before = {
+      ...client.savedData.find((it) => it.key === store.prefix + 'hoge'),
+    };
+
+    const cb = (error?: any) => {
+      try {
+        expect(error).toBeUndefined();
+        const after = client.savedData.find(
+          (it) => it.key === store.prefix + 'hoge'
+        );
+        expect(after).toEqual(before);
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+
+    store.touch ? store.touch('hoge', new_session, cb) : {};
+  });
+
+  test('disable ttl', (done) => {
+    store.enableTTL = false;
+
+    const new_session = {
+      cookie: { originalMaxAge: 86400, path: 'hoge' },
+      message: 'message changed',
+    };
+
+    const before = {
+      ...client.savedData.find((it) => it.key === store.prefix + 'hoge'),
+    };
+
+    const cb = (error?: any) => {
+      try {
+        expect(error).toBeUndefined();
+        const after = client.savedData.find(
+          (it) => it.key === store.prefix + 'hoge'
+        );
+        expect(after).toEqual(before);
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+
+    store.touch ? store.touch('hoge', new_session, cb) : {};
+  });
+
+  test('enable touch with no expire', (done) => {
+    const execTime = new Date();
+
+    const new_session = {
+      cookie: { originalMaxAge: 86400, path: 'hoge' },
+      message: 'message changed',
+    };
+
+    const before = {
+      ...client.savedData.find((it) => it.key === store.prefix + 'hoge'),
+    };
+
+    setTimeout(() => {
+      const cb = (error?: any) => {
+        try {
+          expect(error).toBeNull();
+          const after = client.savedData.find(
+            (it) => it.key === store.prefix + 'hoge'
+          );
+          expect(after?.sessionData).toEqual(new_session);
+          expect(after?.__expires).not.toBe(before.__expires);
+
+          expect(after?.__expires).toBeLessThanOrEqual(
+            execTime.getTime() / 1000 + store.ttl + 5
+          );
+          expect(after?.__expires).toBeGreaterThanOrEqual(
+            execTime.getTime() / 1000 + store.ttl - 5
+          );
+          done();
+        } catch (error: any) {
+          done(error);
+        }
+      };
+
+      store.touch ? store.touch('hoge', new_session, cb) : {};
+    }, 1000);
+  });
+
+  test('enable touch with expire', (done) => {
+    const expires = new Date(Date.now() + 600 * 1000);
+
+    const new_session = {
+      cookie: { originalMaxAge: 86400, path: 'hoge', expires: expires },
+      message: 'message changed',
+    };
+
+    const cb = (error?: any) => {
+      try {
+        expect(error).toBeNull();
+        const after = client.savedData.find(
+          (it) => it.key === store.prefix + 'hoge'
+        );
+        expect(after?.sessionData).toEqual(new_session);
+        expect(after?.__expires).toBe(
+          Math.round(new Date(expires).getTime() / 1000)
+        );
+
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+
+    store.touch ? store.touch('hoge', new_session, cb) : {};
+  });
+
+  test('no session', (done) => {
+    const new_session = {
+      cookie: { originalMaxAge: 86400, path: 'hoge' },
+      message: 'message changed',
+    };
+
+    const cb = (error?: any) => {
+      try {
+        expect(error).toBeUndefined();
+
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+
+    store.touch ? store.touch('no_session', new_session, cb) : {};
+  });
+});
