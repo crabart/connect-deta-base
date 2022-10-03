@@ -149,20 +149,16 @@ export default class FakeDetaBaseClient implements Client {
           expireTime = Math.round(date.getTime() / 1000);
         }
 
-        const sessionData = JSON.stringify((data as RecieveData).sessionData);
+        const sessionData: Object = { ...(data as RecieveData).sessionData };
 
-        const hoge: SaveData = {
-          key: key as string,
-          sessionData: JSON.parse(sessionData),
-        };
         const saveData: SaveData =
           isExpireIn || isExpireAt
             ? {
                 key: key as string,
-                sessionData: JSON.parse(sessionData),
+                sessionData: sessionData as ObjectType,
                 __expires: expireTime,
               }
-            : { key: key as string, sessionData: JSON.parse(sessionData) };
+            : { key: key as string, sessionData: sessionData as ObjectType };
 
         const index = this.savedData.findIndex((element) => {
           return element.key === key;
