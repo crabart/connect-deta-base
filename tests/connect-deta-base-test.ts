@@ -9,6 +9,7 @@ const SetupUtil = require('../test_lib/setup-util');
 declare module 'express-session' {
   interface SessionData {
     __expires?: number;
+    message?: string;
   }
 }
 
@@ -19,6 +20,7 @@ beforeEach(async () => {
   const option = { client: client };
   await SetupUtil.setupDefaultSessions(new cdb(option));
 });
+
 describe('constructor', () => {
   test('hoge', () => {
     expect(1).toBe(1);
@@ -148,7 +150,7 @@ describe('clear', () => {
     const cb = () => {
       try {
         const filterd = client.savedData.filter((it) => {
-          const prefix: string = store.prefix ? store.prefix : '';
+          const prefix: string = store.prefix;
           return it.key.startsWith(prefix);
         });
         expect(filterd.length).toBe(0);
@@ -165,7 +167,7 @@ describe('clear', () => {
     const cb = () => {
       try {
         const filterd = client.savedData.filter((it) => {
-          const prefix: string = store.prefix ? store.prefix : '';
+          const prefix: string = store.prefix;
           return it.key.startsWith(prefix);
         });
         expect(filterd.length).toBe(0);
@@ -298,5 +300,142 @@ describe('get', () => {
       }
     };
     store.get('hoge', cb);
+  });
+});
+
+describe('set', () => {
+  let store: DetaBaseStore;
+  beforeEach(async () => {
+    const option = { client: client };
+    store = new cdb(option);
+  });
+
+  test('disable TTL', (done) => {
+    store.enableTTL = false;
+    const expires = new Date(Date.now() + 60 * 1000);
+
+    const cb = (error: any) => {
+      try {
+        expect(error).toBeNull();
+        const dat = client.savedData.find(
+          (it) => it.key === store.prefix + 'new_session'
+        );
+        expect(dat).toEqual({
+          key: store.prefix + 'new_session',
+          sessionData: {
+            cookie: {
+              originalMaxAge: 86400,
+              path: 'hoge',
+              expires: expires,
+            },
+            message: 'this is message',
+          },
+        });
+
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+
+    store.set(
+      'new_session',
+      {
+        cookie: { originalMaxAge: 86400, path: 'hoge', expires: expires },
+        message: 'this is message',
+      },
+      cb
+    );
+  });
+
+  test('expires exist', (done) => {
+    const expires = new Date(Date.now() + 60 * 1000);
+
+    const cb = (error: any) => {
+      try {
+        expect(error).toBeNull();
+        const dat = client.savedData.find(
+          (it) => it.key === store.prefix + 'new_session'
+        );
+        expect(dat).toEqual({
+          key: store.prefix + 'new_session',
+          sessionData: {
+            cookie: { originalMaxAge: 86400, path: 'hoge', expires: expires },
+            message: 'this is message',
+          },
+          __expires: Math.round(new Date(expires).getTime() / 1000),
+        });
+
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+
+    store.set(
+      'new_session',
+      {
+        cookie: { originalMaxAge: 86400, path: 'hoge', expires: expires },
+        message: 'this is message',
+      },
+      cb
+    );
+  });
+
+  test('expires not exist', (done) => {
+    const execTime = new Date();
+
+    const cb = (error: any) => {
+      try {
+        expect(error).toBeNull();
+        const dat = client.savedData.find(
+          (it) => it.key === store.prefix + 'new_session'
+        );
+        expect(dat?.key).toBe(store.prefix + 'new_session');
+        expect(dat?.sessionData).toEqual({
+          cookie: { originalMaxAge: 86400, path: 'hoge' },
+          message: 'this is message',
+        });
+        expect(dat?.__expires).toBeLessThanOrEqual(
+          execTime.getTime() / 1000 + store.ttl + 5
+        );
+        expect(dat?.__expires).toBeGreaterThanOrEqual(
+          execTime.getTime() / 1000 + store.ttl - 5
+        );
+
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+
+    store.set(
+      'new_session',
+      {
+        cookie: { originalMaxAge: 86400, path: 'hoge' },
+        message: 'this is message',
+      },
+      cb
+    );
+  });
+
+  test('error', (done) => {
+    client.needThrowError = true;
+    const cb = (error: any) => {
+      try {
+        expect(error).toBe('Unauthorized');
+        done();
+      } catch (error: any) {
+        done(error);
+      }
+    };
+    store.set(
+      'new_session',
+      {
+        cookie: { originalMaxAge: 86400, path: 'hoge' },
+        message: 'this is message',
+      },
+      cb
+    );
   });
 });
